@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    html,body{
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    #rnederCanvas{
+      width : 100%;
+      height: 100%; 
+    }
+  </style>
+</head>
+<body>
+  <canvas id='rnederCanvas' touch-action="none"></canvas>
+  <script src="https://preview.babylonjs.com/babylon.js"></script>
+  <script src="plugin/babylonjs.loaders.min.js"></script>
+  <script src="plugin/pep.js"></script>
+  <script>
+    const canvas = document.querySelector('#rnederCanvas');  //获取canvas元素
+    const engine = new BABYLON.Engine(canvas, true);     //生成babylon 3D引擎
+
+    //创建场景
+    const createSence = function () {
+      //创建场景空间
+      const scene = new BABYLON.Scene(engine);
+      
+      // 添加相机到场景并且把相机添加到画布中
+      /* // ArcRotateCamera参数：
+            1.α   //相机饶Y轴旋转的角度
+            2.β   //相机绕X轴旋转的角度
+            3.radius   //视野半径(越小图形越大，相当于视野越靠近)
+            4.target   //目标
+      */
+      //new BABYLON.Vector3(0,0,0) 相当于 new BABYLON.Vector3.zero()
+      const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 10, new BABYLON.Vector3(0,0,0),
+      scene);
+      camera.attachControl(canvas, true);
+      
+      //给场景添加灯光
+      // const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1,1,0), scene);
+      const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0,1,-1), scene);
+      
+      //创建球体
+      const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+      return scene;
+    }
+
+    const scene = createSence();
+
+    engine.runRenderLoop(function () {
+      scene.render();
+    });
+
+    window.addEventListener('resize',()=>{
+      engine.resize();
+    })
+  </script>
+</body>
+</html>
