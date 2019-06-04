@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #rnederCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='rnederCanvas' touch-action="none"></canvas>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="plugin/babylonjs.loaders.min.js"></script>
+    <script src="plugin/pep.js"></script>
+    <script>
+        const allData = {
+            canvas: document.querySelector('#rnederCanvas'), //获取canvas元素
+            alpha: 0,
+            radius: 20
+        }
+        const localFun = {
+            init: function() {
+                allData.engine = new BABYLON.Engine(allData.canvas, true); //生成babylon 3D引擎
+                allData.scene = new BABYLON.Scene(allData.engine);
+                allData.scene.clearColor = new BABYLON.Color4(6 / 255, 22 / 255, 37 / 255, 1);;
+
+                this.createThings();
+                this.createArcRotateCamera();
+                this.createHemisphericLight();
+                this.createAnimation()
+                this.renderScene();
+            },
+            //创建转动相机
+            createArcRotateCamera() {
+                const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 3, Math.PI / 4, 10, new BABYLON
+                    .Vector3(0, 0, 0),
+                    allData.scene);
+                //attachControl 默认为false,阻止对canvas的默认行为
+                camera.attachControl(allData.canvas, true);
+                return camera;
+            },
+            //渲染场景
+            renderScene() {
+                // const scene = this.createSence();
+                allData.engine.runRenderLoop(function() {
+                    allData.scene.render();
+                });
+
+                window.addEventListener('resize', () => {
+                    allData.engine.resize();
+                })
+            },
+            createThings() {
+                const material = new BABYLON.StandardMaterial('material', allData.scene);
+                material.diffuseTexture = new BABYLON.Texture('assets/textures/ground.jpg', allData.scene);
+                const sphere = new BABYLON.MeshBuilder.CreateBox("sphere", {}, allData.scene);
+                sphere.material = material;
+                allData.sphere = sphere;
+            },
+            //给场景添加半球光
+            createHemisphericLight() {
+                const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 1, -1), allData.scene);
+                light2.diffuse = new BABYLON.Color3(1, 0, 0);
+                // light2.groundColor = new BABYLON.Color3(0, 1, 1);
+            },
+            //运动
+            createAnimation() {
+                /* //第三个参数：每秒帧数，
+                第四个参数可选值：
+                    BABYLON.Animation.ANIMATIONTYPE_FLOAT
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR2
+                    BABYLON.Animation.ANIMATIONTYPE_VECTOR3
+                    BABYLON.Animation.ANIMATIONTYPE_QUATERNION
+                    BABYLON.Animation.ANIMATIONTYPE_MATRIX
+                    BABYLON.Animation.ANIMATIONTYPE_COLOR3
+                第五个参数可选值：
+                    BABYLON.Animation.ANIMATIONLOOPMODE_RELATIVE
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE
+                    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+                 */
+
+                const animationBox = new BABYLON.Animation('animationBox', 'scaling.z', 30, BABYLON.Animation.ANIMATIONTYPE_FLOAT, BABYLON.Animation.ANIMATIONLOOPMODE_CYCLE)
+                const keys = []; //类似于css3的帧动画（@keyframe）
+                keys.push({
+                    frame: 0,
+                    value: 3
+                });
+                keys.push({
+                    frame: 50,
+                    value: 5
+                });
+                keys.push({
+                    frame: 100,
+                    value: 3
+                });
+                animationBox.setKeys(keys);
+                allData.sphere.animations.push(animationBox)
+                setTimeout(async() => {
+                    const anim = allData.scene.beginAnimation(allData.sphere, 0, 100, false);
+                    console.log("before");
+                    await anim.waitAsync();
+                    console.log("after");
+                });
+            }
+        }
+
+        localFun.init();
+    </script>
+</body>
+
+</html>

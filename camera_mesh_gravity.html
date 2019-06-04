@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #rnederCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='rnederCanvas' touch-action="none"></canvas>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="plugin/babylonjs.loaders.min.js"></script>
+    <script src="plugin/pep.js"></script>
+    <script>
+        const allData = {
+            canvas: document.querySelector('#rnederCanvas'), //获取canvas元素
+            alpha: 0,
+            radius: 20,
+            ground: ''
+        }
+        const localFun = {
+            init: function() {
+                allData.engine = new BABYLON.Engine(allData.canvas, true); //生成babylon 3D引擎
+                allData.scene = new BABYLON.Scene(allData.engine);
+                allData.scene.clearColor = new BABYLON.Color4(6 / 255, 22 / 255, 37 / 255, 1);;
+
+                this.createThings();
+                this.createFreeCamera();
+                this.createHemisphericLight();
+                this.createCollisions();
+                this.handleKeydown()
+                this.renderScene();
+            },
+            //创建相机
+            createFreeCamera() {
+                const camera = new BABYLON.FreeCamera('Camera', new BABYLON.Vector3(0, 1, -10), allData.scene);
+                //attachControl 默认为false,阻止对canvas的默认行为
+                camera.attachControl(allData.canvas, true);
+                allData.camera = camera;
+                return camera;
+            },
+            //渲染场景
+            renderScene() {
+                // const scene = this.createSence();
+                allData.engine.runRenderLoop(function() {
+                    allData.scene.render();
+                });
+
+                window.addEventListener('resize', () => {
+                    allData.engine.resize();
+                })
+            },
+            createThings() {
+                const ground = BABYLON.MeshBuilder.CreateGround('ground', {
+                    width: 10,
+                    height: 10
+                }, allData.scene);
+                const box = new BABYLON.MeshBuilder.CreateBox('box', {}, allData.scene);
+                const boxMat = new BABYLON.StandardMaterial('box', allData.scene);
+                boxMat.diffuseTexture = new BABYLON.Texture('assets/textures/crate.png', allData.scene);
+                box.material = boxMat;
+                box.position.z = 2;
+                box.position.y = 0.5;
+                allData.box = box;
+                allData.ground = ground;
+            },
+            //给场景添加半球光
+            createHemisphericLight() {
+                const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 1, -1), allData.scene);
+                light2.diffuse = new BABYLON.Color3(1, 0, 0);
+                light2.groundColor = new BABYLON.Color3(0, 1, 1);
+            },
+            //应用重力系统，使相机能紧贴地面移动
+            createCollisions() {
+                allData.scene.gravity = new BABYLON.Vector3(0, -0.9, 0);
+                allData.camera.applyGravity = true; //应用重力
+                //设置椭圆体积
+                allData.camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
+                //场景引用碰撞
+                allData.scene.collisionsEnabled = true;
+                allData.camera.checkCollisions = true;
+                //声明会发生的碰撞体
+                allData.ground.checkCollisions = true;
+                allData.box.checkCollisions = true;
+                // 其他镜头运动参数设置
+                allData.camera.speed = 0.2; // 镜头移动速度
+                allData.camera.angularSensibility = 3000; // 镜头旋转速度
+                allData.camera.inertia = 0.8; // 镜头惯性
+            },
+            handleKeydown() {
+                window.addEventListener('keydown', (e) => {
+                    console.log(e.keyCode)
+                    switch (e.keyCode) {
+                        case 37:
+                            console.log(allData.camera.position.z)
+                            allData.camera.position.z += 0.1;
+                            break;
+                        case 38:
+                            allData.camera.position.x += 0.1;
+                            break;
+
+                        case 39:
+                            allData.camera.position.x -= 0.1;
+                            break;
+                        case 40:
+                            allData.camera.position.z -= 0.1;
+                            break;
+                        default:
+                            break;
+                    }
+                })
+            }
+        }
+
+        localFun.init();
+    </script>
+</body>
+
+</html>

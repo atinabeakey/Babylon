@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #rnederCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='rnederCanvas' touch-action="none"></canvas>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="plugin/babylonjs.loaders.min.js"></script>
+    <script src="plugin/pep.js"></script>
+    <script>
+        const allData = {
+            canvas: document.querySelector('#rnederCanvas'), //获取canvas元素
+            alpha: 0,
+            radius: 20
+        }
+        const localFun = {
+            init: function() {
+                allData.engine = new BABYLON.Engine(allData.canvas, true); //生成babylon 3D引擎
+                allData.scene = new BABYLON.Scene(allData.engine)
+                this.createThings();
+                this.createLight();
+                // this.createUniversalCamera();
+                // this.createArcRotateCamera();
+                this.createFollowCamera();
+                allData.scene.registerBeforeRender(() => {
+                    this.followCameraRotate();
+                });
+                this.renderScene();
+            },
+            //创建转动相机
+            createArcRotateCamera() {
+                const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 10, new BABYLON.Vector3(0, 0, 0),
+                    allData.scene);
+                //attachControl 默认为false,阻止对canvas的默认行为
+                camera.attachControl(allData.canvas, true);
+                return camera;
+            },
+            //创建通用相机
+            createUniversalCamera() {
+                const camera = new BABYLON.UniversalCamera('Camera', new BABYLON.Vector3(0, 0, -10), allData.scene);
+                camera.setTarget(new BABYLON.Vector3.Zero());
+                //attachControl 默认为false,阻止对canvas的默认行为
+                camera.attachControl(allData.canvas, true);
+                return camera;
+            },
+            createFollowCamera() {
+                const camera = new BABYLON.FollowCamera("FollowCam", new BABYLON.Vector3(0, 10, -10), allData.scene);
+                camera.radius = 30;
+                camera.hightOffset = 10;
+                //在x,y平面围绕中心旋转
+                camera.rotationOffset = 0;
+                // Acceleration of camera in moving from current to goal position(相机从当前位置移动到目标位置的加速度)
+                camera.cameraAcceleration = 0.005;
+                camera.maxCameraSpeed = 10;
+                camera.lockedTarget = allData.sphere;
+                camera.attachControl(allData.canvas, true);
+                allData.camera = camera;
+                return camera;
+            },
+            //followCamera
+            followCameraRotate() {
+                allData.alpha += 0.001;
+                allData.sphere.position.x = allData.radius * Math.cos(allData.alpha);
+                allData.sphere.position.y = allData.radius * Math.sin(allData.alpha);
+                allData.sphere.position.z = allData.radius * Math.tan(allData.alpha);
+                allData.camera.rotationOffset = (10 * allData.alpha) % 360;
+            },
+            //AnaglyphCameras
+            AnaglyphCameras() {
+
+            },
+            //渲染场景
+            renderScene() {
+                // const scene = this.createSence();
+                allData.engine.runRenderLoop(function() {
+                    allData.scene.render();
+                });
+
+                window.addEventListener('resize', () => {
+                    allData.engine.resize();
+                })
+            },
+            createThings() {
+                const material = new BABYLON.StandardMaterial('material', allData.scene);
+                material.diffuseTexture = new BABYLON.Texture('assets/textures/ground.jpg', allData.scene);
+                const sphere = new BABYLON.MeshBuilder.CreateSphere("sphere", {
+                    diameter: 4
+                }, allData.scene);
+                sphere.position = new BABYLON.Vector3(20, 0, 10); //其他相机不需要。只有followCamera相机
+
+                sphere.material = material;
+                allData.sphere = sphere;
+                // console.log(allData.sphere)
+            },
+            //给场景添加灯光
+            createLight() {
+                const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 1, -1), allData.scene);
+                light2.diffuse = new BABYLON.Color3(1, 0, 0);
+                light2.groundColor = new BABYLON.Color3(0, 1, 1);
+            }
+        }
+
+        localFun.init();
+    </script>
+</body>
+
+</html>

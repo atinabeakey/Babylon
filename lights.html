@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #rnederCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='rnederCanvas' touch-action="none"></canvas>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="plugin/babylonjs.loaders.min.js"></script>
+    <script src="plugin/pep.js"></script>
+    <script>
+        const allData = {
+            canvas: document.querySelector('#rnederCanvas'), //获取canvas元素
+            alpha: 0,
+            radius: 20
+        }
+        const localFun = {
+            init: function() {
+                allData.engine = new BABYLON.Engine(allData.canvas, true); //生成babylon 3D引擎
+                allData.scene = new BABYLON.Scene(allData.engine);
+                allData.scene.clearColor = new BABYLON.Color4(6 / 255, 22 / 255, 37 / 255, 1);;
+
+                this.createThings();
+                this.createArcRotateCamera();
+                // this.createHemisphericLight();
+                this.createDirectionalLight();
+                // this.createPointLight();
+                this.createSpotLight();
+
+                this.renderScene();
+            },
+            //创建转动相机
+            createArcRotateCamera() {
+                const camera = new BABYLON.ArcRotateCamera('Camera', Math.PI / 2, Math.PI / 2, 10, new BABYLON
+                    .Vector3(0, 0, 0),
+                    allData.scene);
+                //attachControl 默认为false,阻止对canvas的默认行为
+                camera.attachControl(allData.canvas, true);
+                return camera;
+            },
+            //渲染场景
+            renderScene() {
+                // const scene = this.createSence();
+                allData.engine.runRenderLoop(function() {
+                    allData.scene.render();
+                });
+
+                window.addEventListener('resize', () => {
+                    allData.engine.resize();
+                })
+            },
+            createThings() {
+                const material = new BABYLON.StandardMaterial('material', allData.scene);
+                material.diffuseTexture = new BABYLON.Texture('assets/textures/ground.jpg', allData.scene);
+                const sphere = new BABYLON.MeshBuilder.CreateSphere("sphere", {
+                    diameter: 2
+                }, allData.scene);
+                sphere.material = material;
+                allData.sphere = sphere;
+            },
+            //给场景添加半球光
+            createHemisphericLight() {
+                const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 1, -1), allData.scene);
+                light2.diffuse = new BABYLON.Color3(1, 0, 0);
+                light2.groundColor = new BABYLON.Color3(0, 1, 1);
+            },
+            //添加点光源
+            createPointLight() {
+                // const light = new BABYLON.PointLight('light', new BABYLON.Vector3(0, 10, 0), allData.scene);
+                const light = new BABYLON.PointLight('light', new BABYLON.Vector3(10, 0, 0), allData.scene);
+                // const light = new BABYLON.PointLight('light', new BABYLON.Vector3(0, -10, 0), allData.scene);
+                // const light1 = new BABYLON.PointLight('light1', new BABYLON.Vector3(0, 0, 10), allData.scene);
+                // const light1 = new BABYLON.PointLight('light1', new BABYLON.Vector3(0, 0, -10), allData.scene);
+            },
+            //添加定向光
+            createDirectionalLight() {
+                const light1 = new BABYLON.DirectionalLight('light1', new BABYLON.Vector3(0, -10, 0), allData.scene);
+                light1.setEnabled(false);
+            },
+            //添加定向光
+            createSpotLight() { //参数：位置，方向，角度，指数，这些值定义了从该位置开始向该方向发射的光锥
+                const light1 = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(0, 30, -10), new BABYLON.Vector3(0, -1, 0), Math.PI / 3, 2, allData.scene);
+                light1.diffuse = new BABYLON.Color3(0, 1, 0);
+                light1.intensity = 0.7;
+                light1.range = 100;
+            },
+        }
+
+        localFun.init();
+    </script>
+</body>
+
+</html>

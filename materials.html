@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        #rnederCanvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id='rnederCanvas' touch-action="none"></canvas>
+    <script src="https://preview.babylonjs.com/babylon.js"></script>
+    <script src="plugin/babylonjs.loaders.min.js"></script>
+    <script src="plugin/pep.js"></script>
+    <script>
+        const canvas = document.querySelector('#rnederCanvas'); //获取canvas元素
+        const engine = new BABYLON.Engine(canvas, true); //生成babylon 3D引擎
+
+        //创建场景
+        const createSence = function() {
+            //创建场景空间
+            const scene = new BABYLON.Scene(engine);
+
+            // 添加相机到场景并且把相机添加到画布中
+            /* // ArcRotateCamera参数：
+                  1.α   //相机饶Y轴旋转的角度
+                  2.β   //相机绕X轴旋转的角度
+                  3.radius   //视野半径(越小图形越大，相当于视野越靠近)
+                  4.target   //目标
+            */
+            //new BABYLON.Vector3(0,0,0) 相当于 new BABYLON.Vector3.zero()
+            const camera = new BABYLON.ArcRotateCamera('Camera', -Math.PI / 2, Math.PI / 4, 10, new BABYLON.Vector3(0, 0, 0),
+                scene);
+            camera.attachControl(canvas, true);
+            scene.ambientColor = new BABYLON.Color3(1, 1, 1);
+            //给场景添加灯光
+            // const light1 = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(1, 1, 0), scene);
+            // const light2 = new BABYLON.HemisphericLight('light2', new BABYLON.Vector3(0, 1, -1), scene);
+            //SpotLight(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, scene: Scene)
+            // const lightRed = new BABYLON.SpotLight("spotLight", new BABYLON.Vector3(1, 1, 2), new BABYLON.Vector3(0, -1, 0), Math.PI / 2, 1.5, scene); // 平面光
+            const light = new BABYLON.HemisphericLight("hemiLight", new BABYLON.Vector3(-1, 1, 0), scene); // 球体光
+            light.diffuse = new BABYLON.Color3(1, 0, 0);
+            light.specular = new BABYLON.Color3(0, 1, 0);
+            light.groundColor = new BABYLON.Color3(0, 0, 1); //球体背面的光
+
+            // lightRed.emissive = new BABYLON.Color3(1, 0, 0);
+            // lightRed.ambient = new BABYLON.Color3(1, 0, 0);
+            //创建材质
+            /*  //材质光的设置参数：
+            1. diffuse (漫反射)：在光线下观察的材质的基本颜色和纹理
+            2. specular (高光)：光线给材质的高亮
+            3. emissive (自发光)：材质的颜色和纹理，像自发光一样
+            4. ambient (外来光)：外来光照亮材质的颜色和纹理
+            */
+            /* const material = new BABYLON.StandardMaterial("material", scene);
+            material.ambientColor = new BABYLON.Color3(0, 1, 1);
+            material.emissiveColor = new BABYLON.Color3(0, 1, 0);
+            const sphere = new BABYLON.MeshBuilder.CreateSphere('sphere', {
+                diameter: 0.5
+            }, scene);
+            sphere.material = material;
+            sphere.position = lightRed.position;
+            const groundMat = new BABYLON.StandardMaterial("groundMat", scene);
+            groundMat.ambientColor = new BABYLON.Color3(1, 0, 0);
+            const ground = new BABYLON.MeshBuilder.CreateGround("ground", {
+                width: 4,
+                height: 6
+            }, scene);
+            ground.material = groundMat; */
+            //  球体渐变色
+            const redMat = new BABYLON.StandardMaterial('redMat', scene);
+            redMat.ambientColor = new BABYLON.Color3(1, 0, 0);
+
+            const greenMat = new BABYLON.StandardMaterial('greenMat', scene);
+            greenMat.ambientColor = new BABYLON.Color3(0, 1, 0);
+            greenMat.alpha = 0.5;
+            //No ambient color
+            const sphere = new BABYLON.MeshBuilder.CreateSphere('sphere', {}, scene);
+            sphere.position.x = -1.5;
+
+            //red ambient
+            const sphere1 = new BABYLON.MeshBuilder.CreateSphere("sphere1", {}, scene);
+            sphere1.material = redMat;
+
+            //green ambient
+            const sphere2 = new BABYLON.MeshBuilder.CreateSphere("sphere2", {}, scene);
+            sphere2.material = greenMat;
+            sphere2.position.y = 1.5;
+
+            //Texture
+            const grass0 = new BABYLON.StandardMaterial("grass0", scene);
+            grass0.diffuseTexture = new BABYLON.Texture("assets/textures/grass.png", scene);
+
+            const grass1 = new BABYLON.StandardMaterial("grass1", scene);
+            grass1.emissiveTexture = new BABYLON.Texture("assets/textures/grass.png", scene);
+
+            const grass2 = new BABYLON.StandardMaterial("grass2", scene);
+            grass2.ambientTexture = new BABYLON.Texture("assets/textures/ground.jpg", scene);
+            grass2.diffuseColor = new BABYLON.Color3(1, 0, 0);
+            grass2.alpha = 0.2;
+
+            const sphere3 = new BABYLON.MeshBuilder.CreateSphere("sphere3", {}, scene);
+            sphere3.material = grass0;
+            sphere3.position.x = 1.5;
+
+            const sphere4 = new BABYLON.MeshBuilder.CreateSphere("sphere4", {}, scene);
+            sphere4.material = grass1;
+            sphere4.position.z = 1.5;
+
+            const sphere5 = new BABYLON.MeshBuilder.CreateSphere("sphere5", {}, scene);
+            sphere5.material = grass2;
+            sphere5.position.x = 1.5;
+            sphere5.position.z = 1.5;
+
+            const dog = new BABYLON.StandardMaterial('DOG', scene);
+            dog.diffuseTexture = new BABYLON.Texture("assets/textures/dog.png", scene);
+            dog.diffuseTexture.hasAlpha = true;
+            dog.alpha = 0.5;
+            dog.backFaceCulling = false;
+            const box = new BABYLON.MeshBuilder.CreateBox("box", {}, scene);
+            box.material = dog;
+            box.position.x = 3;
+            box.position.y = 3;
+
+
+            return scene;
+        }
+
+        const scene = createSence();
+
+        engine.runRenderLoop(function() {
+            scene.render();
+        });
+
+        window.addEventListener('resize', () => {
+            engine.resize();
+        })
+    </script>
+</body>
+
+</html>
